@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Save, Globe } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
+import Favicon from './Favicon';
 import { Folder, Link, Theme } from '../types';
+import { extractDomain, getFaviconUrl } from '../utils/favicon';
 
 interface AddLinkProps {
   folders: Folder[];
@@ -40,22 +42,8 @@ export default function AddLink({ folders, onBack, onSave, theme, editingLink, c
     }
   }, [editingLink, currentFolderId]);
 
-  const extractDomain = (urlString: string) => {
-    try {
-      const urlObj = new URL(urlString);
-      return urlObj.hostname;
-    } catch {
-      return '';
-    }
-  };
-
   const fetchFavicon = (urlString: string) => {
-    const domain = extractDomain(urlString);
-    if (domain) {
-      // Use Google's favicon service
-      return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
-    }
-    return null;
+    return getFaviconUrl(urlString);
   };
 
   const handleUrlChange = (newUrl: string) => {
@@ -254,8 +242,8 @@ export default function AddLink({ folders, onBack, onSave, theme, editingLink, c
                   : 'bg-gray-50 border-gray-200'
               }`}>
                 <div className="flex items-start gap-3 mb-3">
-                  {favicon ? (
-                    <img src={favicon} alt="" className="w-10 h-10 rounded-lg" />
+                  {url ? (
+                    <Favicon url={url} alt="" className="w-10 h-10 rounded-lg" />
                   ) : (
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                       theme === 'dark' ? 'bg-gray-600' : 'bg-gray-200'

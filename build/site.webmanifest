@@ -1,0 +1,17 @@
+{
+  "name": "Multi-Screen Bookmark Organizer",
+  "short_name": "Bookmarks",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0B0F19",
+  "theme_color": "#A855F7",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "64x64",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
+

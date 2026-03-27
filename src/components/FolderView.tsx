@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Plus, Trash2, Edit, ExternalLink, Bookmark } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Edit, ExternalLink, Bookmark, Grid3x3, List } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { motion } from 'motion/react';
 import { useDrag, useDrop } from 'react-dnd';
+import Favicon from './Favicon';
 import { Folder, Link, Theme } from '../types';
 
 interface FolderViewProps {
@@ -28,6 +29,7 @@ interface DraggableLinkCardProps {
   onDelete: () => void;
   onTogglePin: () => void;
   theme: Theme;
+  viewMode: 'grid' | 'list';
 }
 
 const DraggableLinkCard = ({
@@ -38,6 +40,7 @@ const DraggableLinkCard = ({
   onDelete,
   onTogglePin,
   theme,
+  viewMode,
 }: DraggableLinkCardProps) => {
   const [{ isDragging }, drag] = useDrag({
     type: 'LINK',
@@ -66,18 +69,18 @@ const DraggableLinkCard = ({
         theme === 'dark'
           ? 'bg-gray-800 hover:bg-gray-750 border border-gray-700'
           : 'bg-white hover:shadow-xl border border-gray-200'
-      }`}
+      } ${viewMode === 'list' ? 'flex items-center gap-4' : ''}`}
     >
-      <div className="flex items-start gap-4 mb-3">
-        {link.favicon ? (
-          <img src={link.favicon} alt="" className="w-10 h-10 rounded-lg" />
+      <div className={`flex items-center gap-4 ${viewMode === 'list' ? 'mb-0 flex-1' : 'mb-3'}`}>
+        {link.url ? (
+          <Favicon url={link.url} alt="" className="w-10 h-10 rounded-lg flex-shrink-0" />
         ) : (
           <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg flex items-center justify-center">
             <Bookmark className="w-5 h-5 text-white" />
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center justify-between gap-2">
             <h3 className="font-semibold line-clamp-2">{link.title}</h3>
             <button
               onClick={onTogglePin}
@@ -102,7 +105,7 @@ const DraggableLinkCard = ({
       </div>
 
       {link.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-3">
+        <div className={`flex flex-wrap gap-1 ${viewMode === 'list' ? 'mb-0' : 'mb-3'}`}>
           {link.tags.map(tag => (
             <span
               key={tag}
@@ -118,7 +121,7 @@ const DraggableLinkCard = ({
         </div>
       )}
 
-      <div className="flex items-center gap-2">
+      <div className={`flex items-center gap-2 ${viewMode === 'list' ? 'flex-shrink-0' : ''}`}>
         <a
           href={link.url}
           target="_blank"
@@ -169,6 +172,7 @@ export default function FolderView({
   allLinks,
 }: FolderViewProps) {
   const [localLinks, setLocalLinks] = useState(links);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const getIconComponent = (iconName: string) => {
     const Icon = (LucideIcons as any)[iconName];
@@ -228,13 +232,43 @@ export default function FolderView({
                 </div>
               </div>
             </div>
-            <button
-              onClick={() => onNavigateToAddLink()}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center gap-2 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              Add Link
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-2 rounded-lg transition-colors ${
+                  viewMode === 'grid'
+                    ? 'bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-300'
+                    : theme === 'dark'
+                    ? 'text-gray-400 hover:bg-gray-800'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+                aria-label="Grid view"
+                title="Grid"
+              >
+                <Grid3x3 className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded-lg transition-colors ${
+                  viewMode === 'list'
+                    ? 'bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-300'
+                    : theme === 'dark'
+                    ? 'text-gray-400 hover:bg-gray-800'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+                aria-label="List view"
+                title="List"
+              >
+                <List className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => onNavigateToAddLink()}
+                className="ml-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center gap-2 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Add Link
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -262,7 +296,7 @@ export default function FolderView({
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-3'}>
             {localLinks.map((link, index) => (
               <DraggableLinkCard
                 key={link.id}
@@ -276,6 +310,7 @@ export default function FolderView({
                 }}
                 onTogglePin={() => togglePin(link.id, link.pinned)}
                 theme={theme}
+                viewMode={viewMode}
               />
             ))}
           </div>

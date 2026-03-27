@@ -3,6 +3,7 @@ import { ArrowLeft, Plus, Edit2, Trash2, FolderPlus, Download, Upload, Sun, Moon
 import * as LucideIcons from 'lucide-react';
 import { motion } from 'motion/react';
 import { Folder, Theme } from '../types';
+import { exportToBookmarksHtml, importFromBookmarksHtml } from '../utils/bookmarkHtml';
 
 interface SettingsProps {
   folders: Folder[];
@@ -107,6 +108,18 @@ export default function Settings({
     URL.revokeObjectURL(url);
   };
 
+  const handleExportHtml = () => {
+    const data = onExport();
+    const html = exportToBookmarksHtml(data, 'Bookmark Organizer');
+    const dataBlob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `bookmarks-export-${Date.now()}.html`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -114,7 +127,18 @@ export default function Settings({
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const data = JSON.parse(e.target?.result as string);
+        const text = (e.target?.result as string) ?? '';
+        const name = (file.name || '').toLowerCase();
+
+        const isJson = name.endsWith('.json') || file.type === 'application/json';
+        const isHtml = name.endsWith('.html') || name.endsWith('.htm') || file.type === 'text/html';
+
+        if (!isJson && !isHtml) {
+          alert('Unsupported file type. Please import a .json or .html bookmarks file.');
+          return;
+        }
+
+        const data = isHtml ? importFromBookmarksHtml(text) : JSON.parse(text);
         onImport(data);
         alert('Data imported successfully!');
       } catch (error) {
@@ -368,25 +392,38 @@ export default function Settings({
             <div>
               <h3 className="font-medium mb-1">Export Data</h3>
               <p className={`text-sm mb-3 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                Download all your bookmarks and folders as JSON
+                Download all your bookmarks and folders as JSON or HTML
               </p>
-              <button
-                onClick={handleExport}
-                className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
-                  theme === 'dark'
-                    ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                }`}
-              >
-                <Download className="w-4 h-4" />
-                Export Data
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={handleExport}
+                  className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                    theme === 'dark'
+                      ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                  }`}
+                >
+                  <Download className="w-4 h-4" />
+                  Export JSON
+                </button>
+                <button
+                  onClick={handleExportHtml}
+                  className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                    theme === 'dark'
+                      ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                  }`}
+                >
+                  <Download className="w-4 h-4" />
+                  Export HTML
+                </button>
+              </div>
             </div>
 
             <div className={`pt-4 border-t ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
               <h3 className="font-medium mb-1">Import Data</h3>
               <p className={`text-sm mb-3 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                Import bookmarks from a JSON file
+                Import bookmarks from a JSON or HTML file
               </p>
               <label className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 cursor-pointer inline-flex ${
                 theme === 'dark'
@@ -397,7 +434,7 @@ export default function Settings({
                 Import Data
                 <input
                   type="file"
-                  accept=".json"
+                  accept=".json,.html"
                   onChange={handleImport}
                   className="hidden"
                 />

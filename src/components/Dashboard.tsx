@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Search, Plus, Grid3x3, List, Settings, Bookmark } from 'lucide-react';
+import { Search, Plus, Grid3x3, List, Settings, Bookmark, Trash2 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { motion } from 'motion/react';
+import Favicon from './Favicon';
 import { Folder, Link, Theme, ViewMode } from '../types';
 
 interface DashboardProps {
@@ -13,6 +14,7 @@ interface DashboardProps {
   onNavigateToSettings: () => void;
   theme: Theme;
   onUpdateLink: (linkId: string, updates: Partial<Link>) => void;
+  onDeleteLink: (linkId: string) => void;
 }
 
 export default function Dashboard({
@@ -24,6 +26,7 @@ export default function Dashboard({
   onNavigateToSettings,
   theme,
   onUpdateLink,
+  onDeleteLink,
 }: DashboardProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
@@ -212,8 +215,8 @@ export default function Dashboard({
                     onClick={() => window.open(link.url, '_blank')}
                   >
                     <div className="flex items-start gap-3 mb-3">
-                      {link.favicon ? (
-                        <img src={link.favicon} alt="" className="w-8 h-8 rounded" />
+                      {link.url ? (
+                        <Favicon url={link.url} alt="" className="w-8 h-8 rounded" />
                       ) : (
                         <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-400 rounded flex items-center justify-center">
                           <Bookmark className="w-4 h-4 text-white" />
@@ -242,6 +245,21 @@ export default function Dashboard({
                           className="w-4 h-4"
                           fill={link.pinned ? 'currentColor' : 'none'}
                         />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteLink(link.id);
+                        }}
+                        className={`transition-colors ml-2 ${
+                          theme === 'dark'
+                            ? 'text-gray-600 hover:text-red-400'
+                            : 'text-gray-400 hover:text-red-600'
+                        }`}
+                        aria-label="Delete link"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                     {folder && (

@@ -197,6 +197,7 @@ function App() {
             onNavigateToSettings={() => setCurrentScreen('settings')}
             theme={theme}
             onUpdateLink={updateLink}
+            onDeleteLink={deleteLink}
           />
         )}
         {currentScreen === 'folder' && selectedFolderId && (

@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { ArrowLeft, Search, Bookmark, Tag, Clock, Pin, Edit, Trash2, ExternalLink } from 'lucide-react';
 import { motion } from 'motion/react';
+import Favicon from './Favicon';
 import { Folder, Link, Theme } from '../types';
 
 interface SearchFilterProps {
@@ -242,8 +243,8 @@ export default function SearchFilter({
                   }`}
                 >
                   <div className="flex items-start gap-4 mb-3">
-                    {link.favicon ? (
-                      <img src={link.favicon} alt="" className="w-10 h-10 rounded-lg" />
+                    {link.url ? (
+                      <Favicon url={link.url} alt="" className="w-10 h-10 rounded-lg" />
                     ) : (
                       <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg flex items-center justify-center">
                         <Bookmark className="w-5 h-5 text-white" />
